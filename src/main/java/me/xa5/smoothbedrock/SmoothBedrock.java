@@ -1,37 +1,31 @@
 package me.xa5.smoothbedrock;
 
-import me.xa5.modconfig.ModConfig;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.ArrayUtils;
+import me.xa5.smoothbedrock.config.ModSettings;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 
-import java.io.File;
-
-public class SmoothBedrock implements ModInitializer {
+@Mod(SmoothBedrock.MOD_ID)
+public class SmoothBedrock {
     public static final String MOD_ID = "smoothbedrock";
-    private static SmoothBedrock instance;
     public static SBLogger LOGGER = new SBLogger();
-    private Config config;
 
-    @Override
-    public void onInitialize() {
-        instance = this;
-
-        ModConfig modConfig = new ModConfig();
-        modConfig.configFile = new File(FabricLoader.getInstance().getConfigDirectory(), MOD_ID + ".hjson");
-        modConfig.saveDefaultConfig();
-        this.config = modConfig.loadConfig();
+    public SmoothBedrock () {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ModSettings.COMMON_SPEC);
+        // Register ourselves for server and other game events we are interested in
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
-    public static SmoothBedrock getInstance() {
-        return instance;
-    }
+    public static boolean shouldModifyBedrock(ResourceLocation dimType) {
+//        return true;
 
-    public boolean shouldModifyBedrock(Identifier dimType) {
-        boolean isInList = ArrayUtils.contains(config.dimensionFilter, dimType.toString());
+        System.out.println("getting isInList for: " + dimType.toString());
 
-        if (config.isWhitelist) {
+        boolean isInList = ModSettings.getIsInList(dimType.toString());
+
+        if (ModSettings.COMMON_CONFIG.isWhitelist.get()) {
 //             Is a whitelist; only return true if the dimension is inside the list
             return isInList;
         } else {
